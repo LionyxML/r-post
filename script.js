@@ -1,5 +1,6 @@
 import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import axios from 'axios';
 
 // Query Params: Containers
 const queryParamsContainer = document.querySelector('[data-query-params]');
@@ -40,4 +41,31 @@ function createKeyValuePair() {
     e.target.closest('[data-key-value-pair]').remove();
   });
   return element;
+}
+
+// Form: Containers
+const form = document.querySelector('[data-form]');
+
+form.addEventListener('submit', e=> {
+  e.preventDefault();
+
+  axios({
+    url: document.querySelector('[data-url]').value,
+    method: document.querySelector('[data-method]').value,
+    params: keyValuePairs2Objects(queryParamsContainer),
+    headers: keyValuePairs2Objects(requestHeadersContainer),
+  }).then(response => {
+    console.log(response);
+  });
+});
+
+function keyValuePairs2Objects(container) {
+  const pairs = container.querySelectorAll('[data-key-value-pair]');
+  [...pairs].reduce((data, pair) => {
+    const key = pair.querySelector('[data-key]').value;
+    const value = pair.querySelector('[data-value]').value;
+
+    if (key === '') return data;
+    return { ...data, [key]: value };
+  }, {});
 }

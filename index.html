@@ -12,16 +12,16 @@
 
 <body>
   <div class="p-4">
-    <form>
+    <form data-form>
       <div class="input-group mb-4">
-        <select name="form-select glex-grow-o w-auto">
+        <select name="form-select glex-grow-o w-auto" data-method>
           <option value="GET" selected>GET</option>
           <option value="GET">POST</option>
           <option value="GET">PUT</option>
           <option value="GET">PATCH</option>
           <option value="GET">DELETE</option>
         </select>
-        <input required class="form-control" type="url" placeholder="https://example.com" />
+        <input data-url required class="form-control" type="url" placeholder="https://example.com" />
         <button type="submit" class="btn btn-primary">Send</button>
       </div>
 
