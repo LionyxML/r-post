@@ -45,6 +45,7 @@ function createKeyValuePair() {
 
 // Form: Containers
 const form = document.querySelector('[data-form]');
+const responseHeadersContainer = document.querySelector('[data-response-headers]');
 
 form.addEventListener('submit', e=> {
   e.preventDefault();
@@ -55,7 +56,12 @@ form.addEventListener('submit', e=> {
     params: keyValuePairs2Objects(queryParamsContainer),
     headers: keyValuePairs2Objects(requestHeadersContainer),
   }).then(response => {
-    console.log(response);
+    document.querySelector('[data-response-section]').classList.remove('d-none');
+
+    // updateResponseDetails(response);
+    // updateResponseEditor(response.data);
+    updateResponseHeaders(response.headers);
+    console.log(response.headers);
   });
 });
 
@@ -68,4 +74,18 @@ function keyValuePairs2Objects(container) {
     if (key === '') return data;
     return { ...data, [key]: value };
   }, {});
+}
+
+function updateResponseHeaders(headers) {
+  responseHeadersContainer.innerHTML = '';
+  Object.entries(headers).forEach(([key, value]) => {
+    const keyElement = document.createElement('div');
+    keyElement.textContent = key;
+    responseHeadersContainer.append(keyElement);
+
+    const valueElement = document.createElement('div');
+    valueElement.textContent = value;
+    responseHeadersContainer.append(valueElement);
+
+  });
 }
