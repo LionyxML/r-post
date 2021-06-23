@@ -1,6 +1,7 @@
 import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
+import prettyBytes from 'pretty-bytes';
 
 // Query Params: Containers
 const queryParamsContainer = document.querySelector('[data-query-params]');
@@ -47,7 +48,23 @@ function createKeyValuePair() {
 const form = document.querySelector('[data-form]');
 const responseHeadersContainer = document.querySelector('[data-response-headers]');
 
-form.addEventListener('submit', e=> {
+axios.interceptors.request.use(request => {
+  request.customData = request.customData || {};
+  request.customData.startTime = new Date().getTime();
+  return request;
+});
+
+function updateEndTime(response) {
+  response.customData = response.customData || {};
+  response.customData.time =  new Date().getTime() -  response.config.customData.startTime;
+  return response;
+}
+
+axios.interceptors.response.use(updateEndTime, e => {
+  return Promise.reject(updateEndTime(e.response));
+});
+
+form.addEventListener('submit', e => {
   e.preventDefault();
 
   axios({
@@ -55,11 +72,12 @@ form.addEventListener('submit', e=> {
     method: document.querySelector('[data-method]').value,
     params: keyValuePairs2Objects(queryParamsContainer),
     headers: keyValuePairs2Objects(requestHeadersContainer),
-  }).then(response => {
+  }).catch(e => e)
+    .then(response => {
     document.querySelector('[data-response-section]').classList.remove('d-none');
 
-    // updateResponseDetails(response);
     // updateResponseEditor(response.data);
+    updateResponseDetails(response);
     updateResponseHeaders(response.headers);
     console.log(response.headers);
   });
@@ -88,4 +106,12 @@ function updateResponseHeaders(headers) {
     responseHeadersContainer.append(valueElement);
 
   });
+}
+
+function updateResponseDetails(response) {
+  document.querySelector('[data-status]').textContent = response.status;
+  document.querySelector('[data-time]').textContent = response.customData.time;
+  document.querySelector('[data-size]').textContent = prettyBytes(
+    JSON.stringify(response.data).length + JSON.stringify(response.headers).length
+  );
 }
