@@ -2,6 +2,7 @@ import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
 import prettyBytes from 'pretty-bytes';
+import setupEditors from './setupEditors';
 
 // Query Params: Containers
 const queryParamsContainer = document.querySelector('[data-query-params]');
@@ -35,15 +36,6 @@ document.querySelector('[data-add-request-header-btn]').addEventListener('click'
   requestHeadersContainer.append(createKeyValuePair());
 });
 
-// Header Params: Removes Value (pair) from Value List
-function createKeyValuePair() {
-  const element = keyValueTemplate.content.cloneNode(true);
-  element.querySelector('[data-remove-btn]').addEventListener('click', e => {
-    e.target.closest('[data-key-value-pair]').remove();
-  });
-  return element;
-}
-
 // Form: Containers
 const form = document.querySelector('[data-form]');
 const responseHeadersContainer = document.querySelector('[data-response-headers]');
@@ -64,22 +56,32 @@ axios.interceptors.response.use(updateEndTime, e => {
   return Promise.reject(updateEndTime(e.response));
 });
 
+
+const { requestEditor, updateResponseEditor } = setupEditors();
+
 form.addEventListener('submit', e => {
   e.preventDefault();
+
+  let data;
+  try {
+    data = JSON.parse(requestEditor.state.doc.toString() || null);
+  } catch (err) {
+    alert('JSON data is malformed');
+    return;
+  }
 
   axios({
     url: document.querySelector('[data-url]').value,
     method: document.querySelector('[data-method]').value,
     params: keyValuePairs2Objects(queryParamsContainer),
     headers: keyValuePairs2Objects(requestHeadersContainer),
+    data,
   }).catch(e => e)
     .then(response => {
     document.querySelector('[data-response-section]').classList.remove('d-none');
-
-    // updateResponseEditor(response.data);
+    updateResponseEditor(response.data);
     updateResponseDetails(response);
     updateResponseHeaders(response.headers);
-    console.log(response.headers);
   });
 });
 
